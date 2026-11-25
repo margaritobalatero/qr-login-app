@@ -1,0 +1,25 @@
+{
+  "name": "qr-login-app",
+  "version": "1.0.0",
+  "description": "Node.js QR Code Authentication and Login System",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "qr-code",
+    "login",
+    "authentication",
+    "express",
+    "nodejs"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^5.3.0",
+    "express-session": "^1.19.0",
+    "qrcode": "^1.5.4",
+    "uuid": "^11.1.1"
+  }
+}
