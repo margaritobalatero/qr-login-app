@@ -1,3 +1,4 @@
+
 const express = require("express");
 const path = require("path");
 const session = require("express-session");
@@ -5,38 +6,51 @@ const qrRoutes = require("./routes/qrRoutes.js");
 
 const app = express();
 
-// Middleware
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
 
-// Session setup
+// Session configuration
 app.use(
-  session({
-    secret: "supersecretkey", // Change to env var in production
-    resave: false,
-    saveUninitialized: false,
-    cookie: { maxAge: 600000 }, // 10 min
-  })
+    session({
+        secret: process.env.SESSION_SECRET || "change-this-secret",
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+            maxAge: 10 * 60 * 1000,
+            httpOnly: true,
+            sameSite: "lax"
+        }
+    })
 );
 
-// Routes
+// Static files
+app.use(express.static(path.join(__dirname, "public")));
+
+// QR API routes
 app.use("/api", qrRoutes);
 
-// Protected route for dashboard
+// Protected dashboard
 app.get("/dashboard", (req, res) => {
-  if (req.session.user) {
-    res.sendFile(path.join(__dirname, "public", "dashboard.html"));
-  } else {
+    if (req.session.user) {
+        return res.sendFile(
+            path.join(__dirname, "public", "dashboard.html")
+        );
+    }
+
     res.redirect("/");
-  }
 });
 
-// Logout route
+// Logout
 app.get("/logout", (req, res) => {
-  req.session.destroy(() => {
-    res.redirect("/");
-  });
+    req.session.destroy(() => {
+        res.redirect("/");
+    });
 });
 
+// Listen on all network interfaces
 const PORT = 3000;
-app.listen(PORT, () => console.log(`✅ Server running at http://localhost:${PORT}`));
+
+app.listen(PORT, "0.0.0.0", () => {
+    console.log("QR Login Server Started!");
+    console.log(`Local: http://localhost:${PORT}`);
+    console.log(`LAN: http://192.168.10.179:${PORT}`);
+});

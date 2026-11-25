@@ -1,12 +1,27 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <meta http-equiv="Cache-Control" content="no-store">
 </head>
 <body>
-  <h1>Welcome! 🎉 You are logged in via QR Code.</h1>
-  <a href="/logout">Logout</a>
+
+    <h1>Welcome to Dashboard!</h1>
+
+    <p>You are successfully logged in.</p>
+
+    <p>QR Code Authentication Successful!</p>
+
+    <button onclick="logout()">Logout</button>
+
+    <script>
+        async function logout() {
+            window.location.replace("/logout");
+        }
+    </script>
+
 </body>
 </html>
