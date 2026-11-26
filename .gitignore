@@ -44,3 +44,6 @@ build/
 
 # Local configuration
 *.local
+
+# Vercel configuration
+.vercel/
