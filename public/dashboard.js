@@ -19,6 +19,21 @@ const imageUrlInput = document.getElementById("imageUrl");
 const saveButton = document.getElementById("saveButton");
 const cancelButton = document.getElementById("cancelButton");
 
+// Device QR elements
+const generateDeviceQRButton =
+    document.getElementById("generateDeviceQRButton");
+
+const deviceQRSection =
+    document.getElementById("deviceQRSection");
+
+const deviceQR =
+    document.getElementById("deviceQR");
+
+const deviceQRStatus =
+    document.getElementById("deviceQRStatus");
+
+let deviceQRTimer = null;
+
 // API helper
 async function apiRequest(url, options = {}) {
     const response = await fetch(url, {
@@ -42,6 +57,53 @@ async function apiRequest(url, options = {}) {
     }
 
     return data;
+}
+
+// Generate QR for another device
+async function generateDeviceQR() {
+    try {
+        generateDeviceQRButton.disabled = true;
+        generateDeviceQRButton.textContent = "Generating...";
+
+        clearTimeout(deviceQRTimer);
+
+        deviceQRSection.hidden = true;
+        deviceQR.removeAttribute("src");
+
+        const data = await apiRequest("/api/device-qr");
+
+        deviceQR.src = data.qrDataUrl;
+
+        deviceQRSection.hidden = false;
+
+        deviceQRStatus.textContent =
+            "Waiting for another device to scan...";
+
+        // QR expires after 2 minutes
+        deviceQRTimer = setTimeout(() => {
+            deviceQR.removeAttribute("src");
+
+            deviceQRStatus.textContent =
+                "QR code expired. Generate a new one if needed.";
+
+        }, data.expiresIn * 1000);
+
+    } catch (error) {
+        alert(error.message);
+
+    } finally {
+        generateDeviceQRButton.disabled = false;
+        generateDeviceQRButton.textContent = "Generate QR Code";
+    }
+}
+
+// Close QR display
+function closeDeviceQR() {
+    clearTimeout(deviceQRTimer);
+
+    deviceQR.removeAttribute("src");
+    deviceQRSection.hidden = true;
+    deviceQRStatus.textContent = "";
 }
 
 // READ: Load images

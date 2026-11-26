@@ -9,25 +9,30 @@ const DUMMY_USER = {
     username: "demoUser"
 };
 
-// PC generates QR code
+const BASE_URL =
+    process.env.APP_BASE_URL || "http://192.168.10.179:3000";
+
+function createToken(mode) {
+    const token = generateUniqueToken();
+
+    activeTokens.set(token, {
+        approved: false,
+        mode,
+        expiresAt: Date.now() + 2 * 60 * 1000
+    });
+
+    return token;
+}
+
+// PC generates the original login QR
 async function generateQR(req, res) {
     try {
-        const token = generateUniqueToken();
+        const token = createToken("initial");
 
-        activeTokens.set(token, {
-            approved: false,
-            expiresAt: Date.now() + 2 * 60 * 1000
-        });
-
-        // Remember the QR token in this PC's session
         req.session.loginRequest = token;
 
-        const baseUrl = "http://192.168.10.179:3000";
-        const loginUrl = `${baseUrl}/api/verify/${token}`;
-
+        const loginUrl = `${BASE_URL}/api/verify/${token}`;
         const qrDataUrl = await QRCode.toDataURL(loginUrl);
-
-        console.log("QR generated:", token);
 
         res.json({
             token,
@@ -43,7 +48,32 @@ async function generateQR(req, res) {
     }
 }
 
-// Phone scans QR code and approves PC login
+// Any logged-in device generates a QR for another device
+async function generateDeviceQR(req, res) {
+    try {
+        const token = createToken("device");
+
+        const loginUrl = `${BASE_URL}/api/verify/${token}`;
+        const qrDataUrl = await QRCode.toDataURL(loginUrl);
+
+        console.log("New device QR generated:", token);
+
+        res.json({
+            token,
+            qrDataUrl,
+            loginUrl,
+            expiresIn: 120
+        });
+
+    } catch (error) {
+        console.error("Device QR generation error:", error);
+        res.status(500).json({
+            message: "Could not generate device QR code"
+        });
+    }
+}
+
+// Phone scans and logs in
 function verifyQR(req, res) {
     const token = req.params.token;
     const record = activeTokens.get(token);
@@ -59,26 +89,31 @@ function verifyQR(req, res) {
 
     record.approved = true;
 
-    // Create the phone's independent session
     req.session.user = DUMMY_USER;
 
     req.session.save((error) => {
         if (error) {
             console.error("Phone session error:", error);
+            record.approved = false;
             return res.status(500).send("Phone login failed.");
         }
 
-        console.log("Phone logged in. PC approval sent.");
+        console.log("A device logged in successfully.");
+
+        // Device QR codes are single-use.
+        // Original QR codes stay available for PC approval polling.
+        if (record.mode === "device") {
+            activeTokens.delete(token);
+        }
 
         res.redirect("/dashboard");
     });
 }
 
-// PC checks whether phone approved the QR
+// Original PC checks whether its QR was approved
 function checkStatus(req, res) {
     const token = req.params.token;
 
-    // Make sure this is the PC session that generated the QR
     if (req.session.loginRequest !== token) {
         return res.status(403).json({
             status: "unauthorized"
@@ -96,7 +131,6 @@ function checkStatus(req, res) {
     }
 
     if (record.approved) {
-        // Create the PC's independent session
         req.session.user = DUMMY_USER;
         delete req.session.loginRequest;
 
@@ -126,6 +160,7 @@ function checkStatus(req, res) {
 
 module.exports = {
     generateQR,
+    generateDeviceQR,
     verifyQR,
     checkStatus
 };

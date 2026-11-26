@@ -44,7 +44,13 @@
             opacity: 0.85;
         }
 
-        .logout {
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .logout,
+        .delete {
             background: #dc2626;
         }
 
@@ -70,6 +76,7 @@
             align-items: center;
             gap: 15px;
             margin-top: 12px;
+            flex-wrap: wrap;
         }
 
         #slideTitle {
@@ -117,13 +124,34 @@
             background: #d97706;
         }
 
-        .delete {
-            background: #dc2626;
-        }
-
         #message {
             margin-top: 10px;
             color: #2563eb;
+        }
+
+        #deviceQR {
+            display: block;
+            width: 250px;
+            max-width: 100%;
+            height: auto;
+            margin: 15px auto;
+        }
+
+        #deviceQRSection {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        #deviceQRStatus {
+            color: #555;
+        }
+
+        .notice {
+            color: #92400e;
+            background: #fef3c7;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 14px;
         }
 
         @media (max-width: 600px) {
@@ -151,6 +179,39 @@
         <button class="logout" onclick="logout()">Logout</button>
     </header>
 
+    <!-- ADD DEVICE -->
+    <section class="panel">
+        <h2>Add Another Device</h2>
+
+        <p>
+            Generate a QR code so another phone or computer
+            can log in to this dashboard.
+        </p>
+
+        <button id="generateDeviceQRButton" onclick="generateDeviceQR()">
+            Generate QR Code
+        </button>
+
+        <div id="deviceQRSection" hidden>
+            <img id="deviceQR" alt="QR code for another device">
+
+            <p id="deviceQRStatus">
+                Waiting for another device to scan...
+            </p>
+
+            <p class="notice">
+                Only share this QR code with someone you want
+                to authorize. It expires after 2 minutes and
+                can only be used once.
+            </p>
+
+            <button type="button" onclick="closeDeviceQR()">
+                Close QR Code
+            </button>
+        </div>
+    </section>
+
+    <!-- IMAGE CAROUSEL -->
     <section class="carousel">
 
         <img id="carouselImage" src="" alt="Carousel image">
@@ -166,6 +227,7 @@
 
     </section>
 
+    <!-- ADD / EDIT IMAGE -->
     <section class="panel">
 
         <h2 id="formTitle">Add New Image</h2>
@@ -207,6 +269,7 @@
 
     </section>
 
+    <!-- IMAGE MANAGEMENT -->
     <section class="panel">
 
         <h2>Manage Carousel Images</h2>
