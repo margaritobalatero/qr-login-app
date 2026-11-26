@@ -6,21 +6,32 @@ const qrRoutes = require("./routes/qrRoutes.js");
 
 const app = express();
 
+const requireLogin = (req, res, next) => {
+    if (!req.session.user) {
+        return res.redirect("/");
+    }
+
+    next();
+};
+
 app.use(express.json());
 
 // Session configuration
+
 app.use(
     session({
         secret: process.env.SESSION_SECRET || "change-this-secret",
         resave: false,
         saveUninitialized: false,
+        rolling: true,
         cookie: {
-            maxAge: 10 * 60 * 1000,
+            maxAge: 365 * 24 * 60 * 60 * 1000,
             httpOnly: true,
             sameSite: "lax"
         }
     })
 );
+
 
 // Static files
 app.use(express.static(path.join(__dirname, "public")));
@@ -39,9 +50,33 @@ app.get("/dashboard", (req, res) => {
     res.redirect("/");
 });
 
-// Logout
+
+// Protected dashboard
+app.get("/dashboard", requireLogin, (req, res) => {
+    res.set({
+        "Cache-Control": "no-store, no-cache, must-revalidate, private",
+        "Pragma": "no-cache",
+        "Expires": "0"
+    });
+
+    res.sendFile(
+        path.join(__dirname, "public", "dashboard.html")
+    );
+});
+
+// Independent logout
 app.get("/logout", (req, res) => {
-    req.session.destroy(() => {
+    req.session.destroy((error) => {
+        if (error) {
+            return res.status(500).send("Logout failed");
+        }
+
+        res.clearCookie("connect.sid");
+
+        res.set({
+            "Cache-Control": "no-store, no-cache, must-revalidate, private"
+        });
+
         res.redirect("/");
     });
 });
