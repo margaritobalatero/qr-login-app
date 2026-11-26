@@ -19,6 +19,8 @@ const imageUrlInput = document.getElementById("imageUrl");
 const saveButton = document.getElementById("saveButton");
 const cancelButton = document.getElementById("cancelButton");
 
+const imageSearch = document.getElementById("imageSearch");
+
 // Device QR elements
 const generateDeviceQRButton =
     document.getElementById("generateDeviceQRButton");
@@ -217,15 +219,15 @@ imageForm.addEventListener("submit", async (event) => {
 });
 
 // Display CRUD list
-function displayImageList() {
+function displayImageList(list = images) {
     imageList.replaceChildren();
 
-    if (images.length === 0) {
+    if (list.length === 0) {
         imageList.textContent = "No images saved yet.";
         return;
     }
 
-    images.forEach((image) => {
+    list.forEach((image) => {
         const item = document.createElement("div");
         item.className = "image-item";
 
@@ -322,6 +324,67 @@ async function deleteImage(id) {
         message.textContent = error.message;
     }
 }
+
+function searchImages() {
+    const query = imageSearch.value.trim().toLowerCase();
+
+    const filteredImages = images.filter(image =>
+        image.title.toLowerCase().includes(query)
+    );
+
+    displayImageList(filteredImages);
+
+    if (filteredImages.length === 0) {
+        carouselImage.removeAttribute("src");
+        slideTitle.textContent = "No matching images found";
+        slideCounter.textContent = "0 / 0";
+        return;
+    }
+
+    currentSlide = 0;
+    displayFilteredSlide(filteredImages);
+}
+
+function displayFilteredSlide(filteredImages) {
+    const image = filteredImages[currentSlide];
+
+    carouselImage.src = image.imageUrl;
+    carouselImage.alt = image.title;
+    slideTitle.textContent = image.title;
+
+    slideCounter.textContent =
+        `${currentSlide + 1} / ${filteredImages.length}`;
+}
+
+
+function searchImages() {
+    const query = imageSearch.value.trim().toLowerCase();
+
+    const filteredImages = images.filter(image =>
+        image.title.toLowerCase().includes(query)
+    );
+
+    currentSlide = 0;
+
+    displayImageList(filteredImages);
+
+    if (filteredImages.length === 0) {
+        carouselImage.removeAttribute("src");
+        slideTitle.textContent = "No matching images found";
+        slideCounter.textContent = "0 / 0";
+        return;
+    }
+
+    displayFilteredSlide(filteredImages);
+}
+
+function clearImageSearch() {
+    imageSearch.value = "";
+    currentSlide = 0;
+    displayImageList();
+    displaySlide();
+}
+
 
 // Logout current device only
 function logout() {

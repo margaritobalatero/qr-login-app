@@ -174,10 +174,30 @@
 
 <div class="container">
 
-    <header>
-        <h1>My Image Dashboard</h1>
-        <button class="logout" onclick="logout()">Logout</button>
-    </header>
+   
+<header>
+    <h1>My Image Dashboard</h1>
+
+    <div style="display:flex; gap:8px; align-items:center;">
+        <input
+            type="search"
+            id="imageSearch"
+            placeholder="Search image title..."
+            style="width:200px; margin:0;"
+        >
+
+        <button type="button" onclick="searchImages()">
+            Search
+        </button>
+
+        <button type="button" onclick="clearImageSearch()">
+            Clear
+        </button>
+    </div>
+
+    <button class="logout" onclick="logout()">Logout</button>
+</header>
+
 
     <!-- ADD DEVICE -->
     <section class="panel">
